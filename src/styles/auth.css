@@ -160,9 +160,10 @@
   position: relative;
   width: 500px;
   max-width: 90vw;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
   padding-right: 10px;
+  margin-bottom: 20px;
 }
 
 /* Custom Scrollbar */
