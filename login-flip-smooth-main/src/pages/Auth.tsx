@@ -14,6 +14,10 @@ const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginRole, setLoginRole] = useState('Owner');
+  // Password visibility toggles
+  const [loginShowPassword, setLoginShowPassword] = useState(false);
+  const [registerShowPassword, setRegisterShowPassword] = useState(false);
+  const [confirmShowPassword, setConfirmShowPassword] = useState(false);
   
   // Register form state
   const [fullName, setFullName] = useState('');
@@ -196,22 +200,46 @@ const Auth = () => {
             <form onSubmit={handleLoginSubmit}>
               <div className="form-group">
                 <input
+                  id="loginEmail"
                   type="email"
                   className="form-input"
-                  placeholder="Email Address"
+                  placeholder=" "
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                 />
+                <label htmlFor="loginEmail" className="floating">Email Address</label>
               </div>
 
               <div className="form-group">
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                />
+                <div className="password-wrapper">
+                  <input
+                    id="loginPassword"
+                    type={loginShowPassword ? 'text' : 'password'}
+                    className="form-input has-toggle"
+                    placeholder=" "
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                  />
+                  <label htmlFor="loginPassword" className="floating">Password</label>
+                   <button
+                     type="button"
+                     className="password-toggle"
+                     onClick={() => setLoginShowPassword((s) => !s)}
+                     aria-label={loginShowPassword ? 'Hide password' : 'Show password'}
+                   >
+                    {loginShowPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
@@ -259,42 +287,90 @@ const Auth = () => {
             <form onSubmit={handleRegisterSubmit}>
               <div className="form-group">
                 <input
+                  id="fullName"
                   type="text"
                   className="form-input"
-                  placeholder="Full Name"
+                  placeholder=" "
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
+                <label htmlFor="fullName" className="floating">Full Name</label>
               </div>
 
               <div className="form-group">
                 <input
+                  id="registerEmail"
                   type="email"
                   className="form-input"
-                  placeholder="Email Address"
+                  placeholder=" "
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                 />
+                <label htmlFor="registerEmail" className="floating">Email Address</label>
               </div>
 
               <div className="form-group">
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Password"
-                  value={registerPassword}
-                  onChange={(e) => setRegisterPassword(e.target.value)}
-                />
+                <div className="password-wrapper">
+                  <input
+                    id="registerPassword"
+                    type={registerShowPassword ? 'text' : 'password'}
+                    className="form-input has-toggle"
+                    placeholder=" "
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                  />
+                  <label htmlFor="registerPassword" className="floating">Password</label>
+                   <button
+                     type="button"
+                     className="password-toggle"
+                     onClick={() => setRegisterShowPassword((s) => !s)}
+                     aria-label={registerShowPassword ? 'Hide password' : 'Show password'}
+                   >
+                    {registerShowPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
-                <input
-                  type="password"
-                  className="form-input"
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                <div className="password-wrapper">
+                  <input
+                    id="confirmPassword"
+                    type={confirmShowPassword ? 'text' : 'password'}
+                    className="form-input has-toggle"
+                    placeholder=" "
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <label htmlFor="confirmPassword" className="floating">Confirm Password</label>
+                   <button
+                     type="button"
+                     className="password-toggle"
+                     onClick={() => setConfirmShowPassword((s) => !s)}
+                     aria-label={confirmShowPassword ? 'Hide confirm password' : 'Show confirm password'}
+                   >
+                    {confirmShowPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
@@ -338,12 +414,14 @@ const Auth = () => {
             <form onSubmit={handleForgotPassword}>
               <div className="form-group">
                 <input
+                  id="forgotEmail"
                   type="email"
                   className="form-input"
-                  placeholder="Email Address"
+                  placeholder=" "
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                 />
+                <label htmlFor="forgotEmail" className="floating">Email Address</label>
               </div>
               <button type="submit" className="form-button">
                 Send Reset Link

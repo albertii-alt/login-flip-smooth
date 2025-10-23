@@ -230,6 +230,7 @@
 /* Form Elements */
 .form-group {
   margin-bottom: 10px;
+  position: relative; /* added for floating labels */
 }
 
 .form-input,
@@ -258,12 +259,93 @@
 }
 
 .form-select {
+  /* match form-input pill style */
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23333333' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 28px center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 15px 48px 12px 25px; /* keep left padding for label, right padding for chevron */
+  font-size: 17px;
+  border: none;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #333333;
+  outline: none;
+  transition: all 0.3s ease;
   cursor: pointer;
-  padding-right: 50px;
+  font-family: inherit;
+
+  /* custom chevron (bigger, centered vertically, positioned like the eye button) */
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+/* show same focus effect as inputs */
+.form-select:focus {
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* keep placeholder-like empty option color */
+.form-select option[value=""] {
+  color: #999999;
+}
+
+/* allow floating label to react to select focus or valid value
+   Note: for :valid to work the select should have required + an empty option with value="" */
+.form-select:focus + .floating,
+.form-select:valid + .floating {
+  top: 5px;
+  transform: translateY(0);
+  font-size: 12px;
+  color: #6685e0;
+  background: none;
+  padding: 0 8px;
+  z-index: 3;
+}
+
+/* smaller screens */
+@media (max-width: 480px) {
+  .form-select {
+    padding: 15px 44px 12px 22px;
+  }
+}
+
+/* Floating label */
+.floating {
+  position: absolute;
+  left: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.18s ease;
+  color: #999999;
+  font-size: 15px;
+  pointer-events: none;
+  user-select: none;
+  background: transparent;
+  padding: 0 6px;
+  z-index: 2; /* keep label above input text when floating */
+}
+
+/* when input focused or has content -> float up */
+.form-input:focus + .floating,
+.form-input:not(:placeholder-shown) + .floating {
+  top: 2px; /* moved much higher */
+  transform: translateY(0);
+  font-size: 10px;
+  color: #6685e0;
+  background: none;
+  padding: 0 8px;
+  z-index: 3;
+}
+
+/* adjust for inputs with toggle button so label doesn't overlap toggle */
+.form-input.has-toggle + .floating {
+  left: 25px;
+  right: 72px; /* keep label away from the eye button */
+  max-width: calc(100% - 110px);
 }
 
 /* Form Options */
@@ -443,6 +525,38 @@
   line-height: 1.6;
 }
 
+/* Password toggle styles */
+.password-wrapper {
+  position: relative;
+}
+
+.form-input.has-toggle {
+  padding-right: 60px; /* space for the toggle button */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #001450;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.password-toggle:hover {
+  background: rgba(0, 20, 80, 0.06);
+  color: #002070;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -519,17 +633,27 @@
 
 @media (max-width: 480px) {
   .form-title {
-    font-size: 28px;
+    font-size: 38px;
   }
 
   .form-input,
   .form-select {
-    padding: 15px 22px;
-    font-size: 15px;
+    padding: 20px 25px;
+    font-size: 17px;
   }
 
   .form-button {
     padding: 15px;
     font-size: 16px;
+  }
+
+  .floating {
+    left: 22px;
+    font-size: 14px;
+  }
+  .form-input:focus + .floating,
+  .form-input:not(:placeholder-shown) + .floating {
+    font-size: 10px;
+    top: 5px;
   }
 }
