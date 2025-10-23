@@ -1,0 +1,659 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.auth-container {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.auth-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Background */
+.auth-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.auth-background.login-bg {
+  animation: slideInFromLeft 0.6s ease-out;
+}
+
+.auth-background.register-bg {
+  animation: slideInFromRight 0.6s ease-out;
+}
+
+/* Overlay */
+.auth-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: background 1s ease, opacity 0.8s ease;
+  z-index: 1;
+}
+
+/* Gradient from LEFT → RIGHT (for Login) */
+.auth-overlay.left-to-right {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 174, 239, 0.85) 0%,
+    rgba(0, 174, 239, 0.6) 35%,
+    rgba(0, 174, 239, 0.3) 65%,
+    rgba(0, 174, 239, 0) 100%
+  );
+}
+
+/* Gradient from RIGHT → LEFT (for Register) */
+.auth-overlay.right-to-left {
+  background: linear-gradient(
+    270deg,
+    rgba(0, 174, 239, 0.85) 0%,
+    rgba(0, 174, 239, 0.6) 35%,
+    rgba(0, 174, 239, 0.3) 65%,
+    rgba(0, 174, 239, 0) 100%
+  );
+}
+
+/* Content Container */
+.auth-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.6s ease-in-out;
+}
+
+.auth-content.form-left {
+  align-items: flex-start;
+  padding-left: 10%;
+}
+
+.auth-content.form-right {
+  align-items: flex-end;
+  padding-right: 10%;
+}
+
+/* Logo */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  transition: all 0.6s ease-in-out;
+}
+
+.auth-logo.logo-left {
+  align-self: flex-start;
+}
+
+.auth-logo.logo-right {
+  align-self: flex-end;
+}
+
+.logo-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 30px;
+}
+
+.logo-icon .bar {
+  height: 8px;
+  background-color: #001450;
+  border-radius: 2px;
+}
+
+.logo-icon .bar:nth-child(1) {
+  width: 100%;
+}
+
+.logo-icon .bar:nth-child(2) {
+  width: 80%;
+}
+
+.logo-icon .bar:nth-child(3) {
+  width: 60%;
+}
+
+.logo-text {
+  color: #001450;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.logo-title {
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.logo-subtitle {
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #0099cc;
+}
+
+/* Navigation Arrow */
+.nav-arrow {
+  position: absolute;
+  top: 40px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.nav-arrow.arrow-left {
+  left: 40px;
+}
+
+.nav-arrow.arrow-right {
+  right: 40px;
+}
+
+/* Forms Wrapper */
+.forms-wrapper {
+  position: relative;
+  width: 500px;
+  max-width: 90vw;
+}
+
+/* Form */
+.auth-form {
+  width: 100%;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-form.form-active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.auth-form.form-hidden {
+  position: absolute;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form-left .auth-form.form-hidden {
+  transform: translateX(-100px);
+}
+
+.form-right .auth-form.form-hidden {
+  transform: translateX(100px);
+}
+
+.form-title {
+  color: #000000;
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 10px;
+  position: relative; /* added for floating labels */
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 15px 25px;
+  font-size: 17px;
+  border: none;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #333333;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-input::placeholder {
+  color: #999999;
+}
+
+.form-input:focus,
+.form-select:focus {
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.form-select {
+  /* match form-input pill style */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 15px 48px 12px 25px; /* keep left padding for label, right padding for chevron */
+  font-size: 17px;
+  border: none;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #333333;
+  outline: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: inherit;
+
+  /* custom chevron (bigger, centered vertically, positioned like the eye button) */
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+/* show same focus effect as inputs */
+.form-select:focus {
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* keep placeholder-like empty option color */
+.form-select option[value=""] {
+  color: #999999;
+}
+
+/* allow floating label to react to select focus or valid value
+   Note: for :valid to work the select should have required + an empty option with value="" */
+.form-select:focus + .floating,
+.form-select:valid + .floating {
+  top: 5px;
+  transform: translateY(0);
+  font-size: 12px;
+  color: #6685e0;
+  background: none;
+  padding: 0 8px;
+  z-index: 3;
+}
+
+/* smaller screens */
+@media (max-width: 480px) {
+  .form-select {
+    padding: 15px 44px 12px 22px;
+  }
+}
+
+/* Floating label */
+.floating {
+  position: absolute;
+  left: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.18s ease;
+  color: #999999;
+  font-size: 15px;
+  pointer-events: none;
+  user-select: none;
+  background: transparent;
+  padding: 0 6px;
+  z-index: 2; /* keep label above input text when floating */
+}
+
+/* when input focused or has content -> float up */
+.form-input:focus + .floating,
+.form-input:not(:placeholder-shown) + .floating {
+  top: 2px; /* moved much higher */
+  transform: translateY(0);
+  font-size: 10px;
+  color: #6685e0;
+  background: none;
+  padding: 0 8px;
+  z-index: 3;
+}
+
+/* adjust for inputs with toggle button so label doesn't overlap toggle */
+.form-input.has-toggle + .floating {
+  left: 25px;
+  right: 72px; /* keep label away from the eye button */
+  max-width: calc(100% - 110px);
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #001450;
+}
+
+.remember-me span {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.forgot-password {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: opacity 0.3s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.forgot-password:hover {
+  opacity: 0.8;
+}
+
+/* Button */
+.form-button {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border: none;
+  border-radius: 50px;
+  background-color: #001450;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.form-button:hover {
+  background-color: #002070;
+  box-shadow: 0 6px 25px rgba(0, 20, 80, 0.4);
+  transform: translateY(-2px);
+}
+
+.form-button:active {
+  transform: translateY(0);
+}
+
+/* Form Switch */
+.form-switch {
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #001450;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  padding: 10px;
+  transition: opacity 0.3s ease;
+  font-weight: 500;
+}
+
+.form-switch:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.form-switch-text {
+  text-align: center;
+  margin-top: 20px;
+  color: #000000;
+  font-size: 15px;
+}
+
+.form-switch-link {
+  background: none;
+  border: none;
+  color: #75cbe7;
+  font-size: 15px;
+  cursor: pointer;
+  margin-left: 5px;
+  text-decoration: underline;
+  padding: 0;
+  font-weight: 600;
+}
+
+.form-switch-link:hover {
+  color: #007399;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  width: 90%;
+  max-width: 450px;
+  position: relative;
+  animation: scaleIn 0.3s ease;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 36px;
+  color: #999999;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #333333;
+}
+
+.modal-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #001450;
+  margin-bottom: 15px;
+}
+
+.modal-text {
+  font-size: 15px;
+  color: #666666;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+/* Password toggle styles */
+.password-wrapper {
+  position: relative;
+}
+
+.form-input.has-toggle {
+  padding-right: 60px; /* space for the toggle button */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #001450;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.password-toggle:hover {
+  background: rgba(0, 20, 80, 0.06);
+  color: #002070;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .auth-content.form-left,
+  .auth-content.form-right {
+    align-items: center;
+    padding: 20px;
+  }
+
+  .auth-logo.logo-left,
+  .auth-logo.logo-right {
+    align-self: center;
+  }
+
+  .form-title {
+    font-size: 36px;
+    text-align: center;
+  }
+
+  .nav-arrow.arrow-left {
+    left: 20px;
+  }
+
+  .nav-arrow.arrow-right {
+    right: 20px;
+  }
+
+  .modal-content {
+    padding: 30px 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-title {
+    font-size: 38px;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 20px 25px;
+    font-size: 17px;
+  }
+
+  .form-button {
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  .floating {
+    left: 22px;
+    font-size: 14px;
+  }
+  .form-input:focus + .floating,
+  .form-input:not(:placeholder-shown) + .floating {
+    font-size: 10px;
+    top: 5px;
+  }
+}
