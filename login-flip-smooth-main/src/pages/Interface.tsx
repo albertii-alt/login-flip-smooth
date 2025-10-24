@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import "../styles/interface.css";
 
 interface PropertyCard {
   id: number;
@@ -70,38 +71,36 @@ const Interface = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 interface-container">
       {/* Header */}
-      <header className="bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg">
+      <header className="interface-header">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="text-white text-3xl font-bold">
-                <div className="flex flex-col leading-none">
-                  <span className="text-sm font-semibold">H</span>
-                  <span className="text-sm font-semibold -mt-1">H</span>
-                  <span className="text-sm font-semibold -mt-1">H</span>
-                </div>
+            <div className="logo-container">
+              <div className="logo-icon">
+                <span>H</span>
+                <span>H</span>
+                <span>H</span>
               </div>
-              <div className="text-white">
-                <div className="text-xl font-bold tracking-wide">HOMEBASE</div>
-                <div className="text-xl font-bold tracking-wide -mt-1">FINDER</div>
+              <div className="logo-text">
+                <div>HOMEBASE</div>
+                <div>FINDER</div>
               </div>
             </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="/interface" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+              <a href="/interface" className="nav-link">
                 Home
               </a>
-              <a href="/about" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+              <a href="/about" className="nav-link">
                 About
               </a>
-              <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+              <a href="/auth" className="nav-link">
                 Login
               </a>
-              <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+              <a href="/auth" className="nav-link">
                 Register
               </a>
             </nav>
@@ -116,18 +115,18 @@ const Interface = () => {
               <SheetContent side="right" className="w-80 bg-white">
                 <div className="flex flex-col h-full">
                   {/* User Profile */}
-                  <div className="flex flex-col items-center py-6 border-b">
+                  <div className="sidebar-profile">
                     <img
                       src={user.avatar}
                       alt={user.name}
-                      className="w-24 h-24 rounded-full mb-3 bg-gradient-to-br from-cyan-400 to-blue-500 p-1"
+                      className="sidebar-avatar"
                     />
-                    <h3 className="text-xl font-bold text-foreground">{user.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{user.role}</p>
+                    <h3 className="sidebar-name">{user.name}</h3>
+                    <p className="sidebar-role">{user.role}</p>
                   </div>
 
                   {/* Menu Items */}
-                  <nav className="flex-1 py-6">
+                  <nav className="sidebar-menu">
                     {menuItems.map((item, index) => (
                       <button
                         key={index}
@@ -135,10 +134,10 @@ const Interface = () => {
                           item.onClick();
                           setIsOpen(false);
                         }}
-                        className="w-full flex items-center gap-4 px-6 py-4 text-foreground hover:bg-slate-100 transition-colors text-left"
+                        className="sidebar-menu-item"
                       >
-                        <item.icon className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-lg">{item.label}</span>
+                        <item.icon />
+                        <span>{item.label}</span>
                       </button>
                     ))}
                   </nav>
@@ -152,8 +151,8 @@ const Interface = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Filters Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-6 text-foreground">Filters</h2>
+        <div className="filters-section">
+          <h2 className="filters-title">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select>
               <SelectTrigger className="bg-slate-50">
@@ -188,7 +187,7 @@ const Interface = () => {
               </SelectContent>
             </Select>
 
-            <Button className="bg-gradient-to-r from-blue-900 to-cyan-600 hover:from-blue-800 hover:to-cyan-500 text-white font-semibold">
+            <Button className="search-btn">
               Search
             </Button>
           </div>
@@ -199,38 +198,32 @@ const Interface = () => {
           <h2 className="text-3xl font-bold text-foreground mb-6">All Boardinghouses</h2>
           <div className="space-y-6">
             {properties.map((property) => (
-              <div
-                key={property.id}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-              >
+              <div key={property.id} className="property-card">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div className="aspect-video md:aspect-auto">
                     <img
                       src={property.image}
                       alt={property.title}
-                      className="w-full h-full object-cover"
+                      className="property-image"
                     />
                   </div>
-                  <div className="bg-gradient-to-br from-cyan-400 to-blue-500 p-8 text-white flex flex-col justify-center">
-                    <h3 className="text-3xl font-bold mb-4">
-                      {property.title}
+                  <div className="property-info">
+                    <h3 className="property-title">
+                      THE URBAN <span className="property-title-highlight">NEST</span>
                     </h3>
-                    <p className="text-white/90 mb-4 line-clamp-4">
+                    <p className="property-description">
                       {property.description}
                     </p>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="property-location">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                       </svg>
-                      <span className="text-sm">{property.location}</span>
+                      <span>{property.location}</span>
                     </div>
-                    <div className="text-2xl font-bold mb-4">{property.price}</div>
-                    <Button
-                      variant="outline"
-                      className="bg-white/10 border-white/50 text-white hover:bg-white/20 hover:text-white"
-                    >
+                    <div className="property-price">{property.price}</div>
+                    <button className="view-more-btn">
                       View More
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
