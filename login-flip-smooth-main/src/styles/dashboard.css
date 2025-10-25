@@ -1,9 +1,8 @@
 /* Dashboard Page Styles */
 
-.dashboard-container {
-  min-height: 100vh;
+.dashboard-content {
   background: linear-gradient(to bottom, #e6f7fa, #f0f9fb);
-  padding: 2rem;
+  padding: 2rem !important;
 }
 
 .dashboard-header {

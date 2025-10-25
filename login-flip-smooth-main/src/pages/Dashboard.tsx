@@ -1,9 +1,8 @@
 import { Building2, Bed, Bath, ChefHat, DoorOpen, Plus, Edit, Image, AlertCircle, TrendingUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Sidebar } from "@/components/Sidebar";
 import "../styles/dashboard.css";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
 
   const summaryStats = [
     { icon: Building2, title: "Total Boardinghouses", value: 3, color: "#06b6d4" },
@@ -77,7 +76,9 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="dashboard-container">
+    <div className="app-layout">
+      <Sidebar />
+      <div className="main-content dashboard-content">
       {/* Header */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">Dashboard</h1>
@@ -274,6 +275,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
