@@ -119,22 +119,10 @@
   width: 30px;
 }
 
-.logo-icon .bar {
-  height: 8px;
-  background-color: #001450;
-  border-radius: 2px;
-}
-
-.logo-icon .bar:nth-child(1) {
+.img-logo {
   width: 100%;
-}
-
-.logo-icon .bar:nth-child(2) {
-  width: 80%;
-}
-
-.logo-icon .bar:nth-child(3) {
-  width: 60%;
+  height: auto;
+  display: block;
 }
 
 .logo-text {
