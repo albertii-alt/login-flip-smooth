@@ -229,8 +229,9 @@ const Interface = () => {
                     <Button
                       variant="outline"
                       className="bg-white/10 border-white/50 text-white hover:bg-white/20 hover:text-white"
+                      onClick={() => navigate(`/boardinghouse/${property.id}`)}
                     >
-                      View More
+                      View Details
                     </Button>
                   </div>
                 </div>

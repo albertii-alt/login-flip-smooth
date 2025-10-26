@@ -13,6 +13,7 @@ import AddBoardinghouse from "./pages/AddBoardinghouse";
 import EditBoardinghouse from "./pages/EditBoardinghouse";
 import AddRoom from "./pages/AddRoom";
 import EditRoom from "./pages/EditRoom";
+import BoardinghouseDetails from "./pages/BoardinghouseDetails";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/index" element={<Index />} />
           <Route path="/interface" element={<Interface />} />
+          <Route path="/boardinghouse/:id" element={<BoardinghouseDetails />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-boardinghouse" element={<MyBoardinghouse />} />
           <Route path="/add-boardinghouse" element={<AddBoardinghouse />} />
