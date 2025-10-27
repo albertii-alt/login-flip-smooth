@@ -250,7 +250,7 @@
 }
 
 .form-input.half {
-  width: calc(50% - 10px);
+  width: calc(40% - 10px);
 }
 
 .form-input:focus {

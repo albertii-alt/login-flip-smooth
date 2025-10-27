@@ -25,35 +25,29 @@ interface PropertyCard {
   image: string;
 }
 
+interface CurrentUser {
+  name?: string;
+  email?: string;
+  role?: string;
+  avatar?: string;
+  loggedIn?: boolean;
+}
+
 const Interface = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Mock user data - in real app, get from auth context
-  const user = {
-    name: "John Doe",
-    role: "owner", // or "tenant"
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John"
-  };
 
-  const properties: PropertyCard[] = [
-    {
-      id: 1,
-      title: "THE URBAN NEST",
-      description: "A boardinghouse is a private house where people rent rooms for longer periods, often sharing common areas like a kitchen and living room, and typically receive meals in addition to lodging. These houses provide more of a communal...",
-      location: "Trinidad, Bohol",
-      price: "₱1,000/month",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      title: "THE URBAN NEST",
-      description: "A boardinghouse is a private house where people rent rooms for longer periods, often sharing common areas like a kitchen and living room, and typically receive meals in addition to lodging. These houses provide more of a communal...",
-      location: "Trinidad, Bohol",
-      price: "₱1,000/month",
-      image: "/placeholder.svg"
-    }
-  ];
+  // read current user from localStorage (set by Auth.tsx)
+  const raw = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
+  const parsed: CurrentUser | null = raw ? JSON.parse(raw) : null;
+
+  const user: CurrentUser = {
+    name: parsed?.name ?? "Guest",
+    email: parsed?.email ?? "",
+    role: (parsed?.role ?? "tenant").toString().toLowerCase(),
+    avatar: parsed?.avatar ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(parsed?.name ?? "Guest")}`,
+    loggedIn: parsed?.loggedIn ?? false,
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
@@ -63,11 +57,33 @@ const Interface = () => {
   const menuItems = [
     { icon: Home, label: "Home", onClick: () => navigate("/interface") },
     { icon: Info, label: "About", onClick: () => navigate("/about") },
+    // Dashboard only visible for owners
     ...(user.role === "owner" ? [{ icon: LayoutDashboard, label: "Dashboard", onClick: () => navigate("/dashboard") }] : []),
     { icon: HelpCircle, label: "Help", onClick: () => {} },
     { icon: Shield, label: "Privacy & Policy", onClick: () => {} },
     { icon: Settings, label: "Settings", onClick: () => {} },
     { icon: LogOut, label: "Logout", onClick: handleLogout },
+  ];
+
+  const properties: PropertyCard[] = [
+    {
+      id: 1,
+      title: "THE URBAN NEST",
+      description:
+        "A boardinghouse is a private house where people rent rooms for longer periods, often sharing common areas like a kitchen and living room, and typically receive meals in addition to lodging. These houses provide more of a communal...",
+      location: "Trinidad, Bohol",
+      price: "₱1,000/month",
+      image: "/placeholder.svg",
+    },
+    {
+      id: 2,
+      title: "THE URBAN NEST",
+      description:
+        "A boardinghouse is a private house where people rent rooms for longer periods, often sharing common areas like a kitchen and living room, and typically receive meals in addition to lodging. These houses provide more of a communal...",
+      location: "Trinidad, Bohol",
+      price: "₱1,000/month",
+      image: "/placeholder.svg",
+    },
   ];
 
   return (
@@ -76,36 +92,42 @@ const Interface = () => {
       <header className="bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="text-white text-3xl font-bold">
-                <div className="flex flex-col leading-none">
-                  <span className="text-sm font-semibold">H</span>
-                  <span className="text-sm font-semibold -mt-1">H</span>
-                  <span className="text-sm font-semibold -mt-1">H</span>
-                </div>
+            {/* Logo + small profile on left */}
+            <div className="flex items-center gap-4">
+              <div className="logo-icon">
+                <img className="img-logo" src="/src/assets/HomebaseFinderOfficialLogo.png" alt="Homebase Finder Logo" />
               </div>
-              <div className="text-white">
-                <div className="text-xl font-bold tracking-wide">HOMEBASE</div>
-                <div className="text-xl font-bold tracking-wide -mt-1">FINDER</div>
+              <div className="logo-text">
+                <div className="logo-title">HOMEBASE</div>
+                <div className="logo-subtitle">FINDER</div>
               </div>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="/interface" className="text-white font-semibold hover:text-cyan-100 transition-colors">
-                Home
-              </a>
-              <a href="/about" className="text-white font-semibold hover:text-cyan-100 transition-colors">
-                About
-              </a>
-              <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
-                Login
-              </a>
-              <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
-                Register
-              </a>
-            </nav>
+            {/* Desktop Navigation + (no profile shown here) */}
+            {/* Profile & logout are intentionally moved into the sidebar so owner and tenant see the same header. */}
+            <div className="hidden md:flex items-center gap-8">
+              <nav className="flex items-center gap-6">
+                <a href="/interface" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+                  Home
+                </a>
+                <a href="/about" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+                  About
+                </a>
+              </nav>
+
+              {/* For desktop we only show login/register when NOT logged in.
+                  When logged in, user profile + logout are available in the sidebar (Sheet). */}
+              {!user.loggedIn && (
+                <div className="flex items-center gap-4">
+                  <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+                    Login
+                  </a>
+                  <a href="/auth" className="text-white font-semibold hover:text-cyan-100 transition-colors">
+                    Register
+                  </a>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -116,7 +138,7 @@ const Interface = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-80 bg-white">
                 <div className="flex flex-col h-full">
-                  {/* User Profile */}
+                  {/* User Profile - use real currentUser data */}
                   <div className="flex flex-col items-center py-6 border-b">
                     <img
                       src={user.avatar}
@@ -124,7 +146,8 @@ const Interface = () => {
                       className="w-24 h-24 rounded-full mb-3 bg-gradient-to-br from-cyan-400 to-blue-500 p-1"
                     />
                     <h3 className="text-xl font-bold text-foreground">{user.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize">{user.role}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="text-sm text-muted-foreground capitalize mt-1">{user.role}</p>
                   </div>
 
                   {/* Menu Items */}

@@ -1,168 +1,262 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/auth.css';
-import loginBg from '../assets/loginphoto.jpg';
-import registerBg from '../assets/loginphoto.jpg';
+import "../styles/auth.css";
+import loginBg from "../assets/loginphoto.jpg";
+import registerBg from "../assets/loginphoto.jpg";
+import { useIsMobile } from "../hooks/use-mobile";
+import { useToast } from "../hooks/use-toast";
+
+type StoredUser = {
+  fullName?: string;
+  email: string;
+  password: string;
+  role: "owner" | "tenant";
+};
 
 const Auth = () => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+
   const [isLogin, setIsLogin] = useState(true);
+
+  // common UI state
   const [rememberMe, setRememberMe] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginRole, setLoginRole] = useState('Owner');
-  // Password visibility toggles
+  const [forgotEmail, setForgotEmail] = useState("");
+
+  // login state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginRole, setLoginRole] = useState<"owner" | "tenant">("owner");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // register state
+  const [fullName, setFullName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [registerRole, setRegisterRole] = useState<"owner" | "tenant">("owner");
+  const [registerLoading, setRegisterLoading] = useState(false);
+
+  // show/hide password toggles
   const [loginShowPassword, setLoginShowPassword] = useState(false);
   const [registerShowPassword, setRegisterShowPassword] = useState(false);
   const [confirmShowPassword, setConfirmShowPassword] = useState(false);
-  
-  // Register form state
-  const [fullName, setFullName] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [registerRole, setRegisterRole] = useState('Owner');
 
-  // Load remembered email on mount
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-      setLoginEmail(rememberedEmail);
+    // auto-redirect if already logged in
+    try {
+      const raw = localStorage.getItem("currentUser");
+      if (raw) {
+        const cu = JSON.parse(raw);
+        if (cu && cu.loggedIn) {
+          navigate("/interface");
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // load remembered email (if any)
+    const remembered = localStorage.getItem("rememberedEmail");
+    if (remembered) {
+      setLoginEmail(remembered);
       setRememberMe(true);
     }
-  }, []);
+  }, [navigate]);
+
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   const handleLoginSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
+    if (loginLoading) return;
+
     if (!loginEmail || !loginPassword) {
-      alert('Please fill in all fields');
+      toast({ title: "Login failed", description: "Please fill in all fields." });
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(loginEmail)) {
-      alert('Please enter a valid email address');
+    if (!validateEmail(loginEmail)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address." });
       return;
     }
 
-    // Handle remember me
-    if (rememberMe) {
-      localStorage.setItem('rememberedEmail', loginEmail);
-    } else {
-      localStorage.removeItem('rememberedEmail');
-    }
+    setLoginLoading(true);
 
-    // Store user session
-    const user = {
-      email: loginEmail,
-      role: loginRole,
-      loggedIn: true
-    };
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    // simulate server delay
+    setTimeout(() => {
+      const users = (JSON.parse(localStorage.getItem("registeredUsers") || "[]") as StoredUser[]) || [];
+      const matched = users.find((u) => u.email.toLowerCase() === loginEmail.trim().toLowerCase());
 
-    alert(`Login successful!\nEmail: ${loginEmail}\nRole: ${loginRole}`);
-    window.location.href = '/';
+      if (!matched) {
+        setLoginLoading(false);
+        toast({ title: "Login failed", description: "Account not found. Please register first." });
+        return;
+      }
+
+      // check role
+      if (matched.role !== loginRole) {
+        setLoginLoading(false);
+        toast({ title: "Wrong account type", description: "Wrong account type." });
+        return;
+      }
+
+      // check password
+      if (matched.password !== loginPassword) {
+        setLoginLoading(false);
+        toast({ title: "Login failed", description: "Email or password is incorrect." });
+        return;
+      }
+
+      // remember email if requested
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", loginEmail.trim());
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
+      // set current user session
+      const currentUser = {
+        name: matched.fullName || matched.email,
+        email: matched.email,
+        role: matched.role,
+        loggedIn: true,
+      };
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      setLoginLoading(false);
+      toast({
+        title: `Welcome back, ${currentUser.name}!`,
+        description: `You are logged in as ${currentUser.role}.`,
+      });
+
+      // redirect to interface (role-specific rendering is handled in Interface.tsx)
+      setTimeout(() => navigate("/interface"), 600);
+    }, 700);
   };
 
   const handleRegisterSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (registerLoading) return;
 
     if (!fullName || !registerEmail || !registerPassword || !confirmPassword) {
-      alert('Please fill in all fields');
+      toast({ title: "Registration failed", description: "Please fill in all fields." });
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(registerEmail)) {
-      alert('Please enter a valid email address');
+    if (!validateEmail(registerEmail)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address." });
       return;
     }
 
-    // Password validation
     if (registerPassword.length < 6) {
-      alert('Password must be at least 6 characters long');
+      toast({ title: "Weak password", description: "Password must be at least 6 characters long." });
       return;
     }
 
     if (registerPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      toast({ title: "Password mismatch", description: "Passwords do not match." });
       return;
     }
 
-    // Store registered user
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    
-    // Check if email already exists
-    if (users.some((u: any) => u.email === registerEmail)) {
-      alert('An account with this email already exists');
-      return;
-    }
+    setRegisterLoading(true);
 
-    const newUser = {
-      fullName,
-      email: registerEmail,
-      password: registerPassword,
-      role: registerRole
-    };
-    users.push(newUser);
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    setTimeout(() => {
+      const users = (JSON.parse(localStorage.getItem("registeredUsers") || "[]") as StoredUser[]) || [];
 
-    alert('Registration successful! You can now login.');
-    
-    // Switch to login form and pre-fill email
-    setIsLogin(true);
-    setLoginEmail(registerEmail);
+      if (users.some((u) => u.email.toLowerCase() === registerEmail.trim().toLowerCase())) {
+        setRegisterLoading(false);
+        toast({ title: "Account already registered.", description: "Use another email or login." });
+        return;
+      }
+
+      const newUser: StoredUser = {
+        fullName: fullName.trim(),
+        email: registerEmail.trim().toLowerCase(),
+        password: registerPassword,
+        role: registerRole,
+      };
+
+      users.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(users));
+
+      setRegisterLoading(false);
+      toast({ title: "Registration successful", description: "You can now log in with your credentials." });
+
+      // switch to login and pre-fill
+      setIsLogin(true);
+      setLoginEmail(newUser.email);
+      setLoginPassword("");
+      setConfirmPassword("");
+      setRegisterPassword("");
+    }, 700);
   };
 
   const handleForgotPassword = (e: FormEvent) => {
     e.preventDefault();
-
     if (!forgotEmail) {
-      alert('Please enter your email address');
+      toast({ title: "Validation", description: "Please enter your email address." });
+      return;
+    }
+    if (!validateEmail(forgotEmail)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address." });
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(forgotEmail)) {
-      alert('Please enter a valid email address');
-      return;
-    }
-
-    // Simulate password reset
-    alert(`Password reset link has been sent to ${forgotEmail}`);
+    // simulate send
+    toast({ title: "Reset link sent", description: `Password reset link has been sent to ${forgotEmail}` });
     setShowForgotPassword(false);
-    setForgotEmail('');
+    setForgotEmail("");
   };
-  const navigate = useNavigate();
 
-  const handleNavigation = () => {
-    navigate("/index"); // 👈 Redirect to Index.tsx
-};
-
-  const toggleForm = () => {
-    setIsLogin(!isLogin);
-  };
+  const toggleForm = () => setIsLogin((s) => !s);
 
   return (
-    <div className="auth-container">
-      <div 
-        className={`auth-background ${isLogin ? 'login-bg' : 'register-bg'}`}
-        style={{
-          backgroundImage: `url(${isLogin ? loginBg : registerBg})`
-        }}
-      ></div>
-      
-<div className={`auth-overlay ${isLogin ? 'left-to-right' : 'right-to-left'}`}></div>
+    <div className={`auth-container ${isLogin ? "no-scroll-form" : ""}`}>
+      {/* Navigation arrows (visible on forms) - clicking redirects to index.html
+          Show only LEFT arrow on the Login form and only RIGHT arrow on Register */}
+      {isLogin ? (
+        <button
+          className="nav-arrow arrow-left"
+          type="button"
+          onClick={() => {
+            // navigate to static index.html
+            window.location.href = "/index";
+          }}
+          aria-label="Go to home"
+        >
+          {/* white chevron-left icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+      ) : (
+        <button
+          className="nav-arrow arrow-right"
+          type="button"
+          onClick={() => {
+            window.location.href = "/index";
+          }}
+          aria-label="Go to home"
+        >
+          {/* white chevron-right icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      )}
+      <div
+        className={`auth-background ${isLogin ? "login-bg" : "register-bg"}`}
+        style={{ backgroundImage: `url(${isLogin ? loginBg : registerBg})` }}
+      />
 
-      <div className={`auth-content ${isLogin ? 'form-left' : 'form-right'}`}>
+      <div className={`auth-overlay ${isLogin ? "left-to-right" : "right-to-left"}`} />
+
+      <div className={`auth-content ${isLogin ? "form-left" : "form-right"} ${isMobile ? "mobile" : ""}`}>
         {/* Logo */}
-        <div className={`auth-logo ${isLogin ? 'logo-left' : 'logo-right'}`}>
+        <div className={`auth-logo ${isLogin ? "logo-left" : "logo-right"}`}>
           <div className="logo-icon">
             <img className="img-logo" src="/src/assets/HomebaseFinderOfficialLogo.png" alt="Homebase Finder Logo" />
           </div>
@@ -172,29 +266,11 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Navigation Arrow */}
-        <button 
-          className={`nav-arrow ${isLogin ? 'arrow-left' : 'arrow-right'}`}
-          onClick={handleNavigation}
-          aria-label={isLogin ? 'Go to register' : 'Go to login'}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path 
-              d={isLogin ? "M15 18l-6-6 6-6" : "M9 18l6-6-6-6"} 
-              stroke="white" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        {/* Forms Container */}
+        {/* Forms */}
         <div className="forms-wrapper">
-          {/* Login Form */}
-          <div className={`auth-form ${isLogin ? 'form-active' : 'form-hidden'}`}>
+          {/* Login */}
+          <div className={`auth-form ${isLogin ? "form-active" : "form-hidden"}`}>
             <h1 className="form-title">Welcome Back!</h1>
-            
             <form onSubmit={handleLoginSubmit}>
               <div className="form-group">
                 <input
@@ -212,30 +288,20 @@ const Auth = () => {
                 <div className="password-wrapper">
                   <input
                     id="loginPassword"
-                    type={loginShowPassword ? 'text' : 'password'}
+                    type={loginShowPassword ? "text" : "password"}
                     className="form-input has-toggle"
                     placeholder=" "
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                   />
                   <label htmlFor="loginPassword" className="floating">Password</label>
-                   <button
-                     type="button"
-                     className="password-toggle"
-                     onClick={() => setLoginShowPassword((s) => !s)}
-                     aria-label={loginShowPassword ? 'Hide password' : 'Show password'}
-                   >
-                    {loginShowPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setLoginShowPassword((s) => !s)}
+                    aria-label={loginShowPassword ? "Hide password" : "Show password"}
+                  >
+                    {loginShowPassword ? "🙈" : "👁️"}
                   </button>
                 </div>
               </div>
@@ -244,31 +310,26 @@ const Auth = () => {
                 <select
                   className="form-select"
                   value={loginRole}
-                  onChange={(e) => setLoginRole(e.target.value)}
+                  onChange={(e) => setLoginRole(e.target.value as "owner" | "tenant")}
                 >
-                  <option value="Owner">Owner</option>
-                  <option value="Tenant">Tenant</option>
+                  <option value="owner">Owner</option>
+                  <option value="tenant">Tenant</option>
                 </select>
               </div>
+
               <div className="form-options">
                 <label className="remember-me">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
+                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
                   <span>Remember me</span>
                 </label>
-                <button
-                  type="button"
-                  className="forgot-password"
-                  onClick={() => setShowForgotPassword(true)}
-                >
+
+                <button type="button" className="forgot-password" onClick={() => setShowForgotPassword(true)}>
                   Forgot Password?
                 </button>
               </div>
-              <button type="submit" className="form-button">
-                LOGIN
+
+              <button type="submit" className="form-button" disabled={loginLoading}>
+                {loginLoading ? "Logging in..." : "LOGIN"}
               </button>
 
               <div className="form-switch-text">
@@ -278,10 +339,10 @@ const Auth = () => {
               </div>
             </form>
           </div>
-          {/* Register Form */}
-          <div className={`auth-form ${!isLogin ? 'form-active' : 'form-hidden'}`}>
+
+          {/* Register */}
+          <div className={`auth-form ${!isLogin ? "form-active" : "form-hidden"}`}>
             <h1 className="form-title">Create an Account</h1>
-            
             <form onSubmit={handleRegisterSubmit}>
               <div className="form-group">
                 <input
@@ -311,30 +372,20 @@ const Auth = () => {
                 <div className="password-wrapper">
                   <input
                     id="registerPassword"
-                    type={registerShowPassword ? 'text' : 'password'}
+                    type={registerShowPassword ? "text" : "password"}
                     className="form-input has-toggle"
                     placeholder=" "
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
                   />
                   <label htmlFor="registerPassword" className="floating">Password</label>
-                   <button
-                     type="button"
-                     className="password-toggle"
-                     onClick={() => setRegisterShowPassword((s) => !s)}
-                     aria-label={registerShowPassword ? 'Hide password' : 'Show password'}
-                   >
-                    {registerShowPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setRegisterShowPassword((s) => !s)}
+                    aria-label={registerShowPassword ? "Hide password" : "Show password"}
+                  >
+                    {registerShowPassword ? "🙈" : "👁️"}
                   </button>
                 </div>
               </div>
@@ -343,30 +394,20 @@ const Auth = () => {
                 <div className="password-wrapper">
                   <input
                     id="confirmPassword"
-                    type={confirmShowPassword ? 'text' : 'password'}
+                    type={confirmShowPassword ? "text" : "password"}
                     className="form-input has-toggle"
                     placeholder=" "
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <label htmlFor="confirmPassword" className="floating">Confirm Password</label>
-                   <button
-                     type="button"
-                     className="password-toggle"
-                     onClick={() => setConfirmShowPassword((s) => !s)}
-                     aria-label={confirmShowPassword ? 'Hide confirm password' : 'Show confirm password'}
-                   >
-                    {confirmShowPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M17.94 17.94A10.97 10.97 0 0 1 12 19c-7 0-11-7-11-7a22.9 22.9 0 0 1 5.4-5.94" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M1 1l22 22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setConfirmShowPassword((s) => !s)}
+                    aria-label={confirmShowPassword ? "Hide confirm password" : "Show confirm password"}
+                  >
+                    {confirmShowPassword ? "🙈" : "👁️"}
                   </button>
                 </div>
               </div>
@@ -375,19 +416,19 @@ const Auth = () => {
                 <select
                   className="form-select"
                   value={registerRole}
-                  onChange={(e) => setRegisterRole(e.target.value)}
+                  onChange={(e) => setRegisterRole(e.target.value as "owner" | "tenant")}
                 >
-                  <option value="Owner">Owner</option>
-                  <option value="Tenant">Tenant</option>
+                  <option value="owner">Owner</option>
+                  <option value="tenant">Tenant</option>
                 </select>
               </div>
 
-              <button type="submit" className="form-button">
-                Register
+              <button type="submit" className="form-button" disabled={registerLoading}>
+                {registerLoading ? "Creating..." : "Register"}
               </button>
 
               <div className="form-switch-text">
-                Already have an Account? 
+                Already have an Account?
                 <button type="button" className="form-switch-link" onClick={toggleForm}>
                   Login here
                 </button>
@@ -401,12 +442,7 @@ const Auth = () => {
       {showForgotPassword && (
         <div className="modal-overlay" onClick={() => setShowForgotPassword(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="modal-close"
-              onClick={() => setShowForgotPassword(false)}
-            >
-              ×
-            </button>
+            <button className="modal-close" onClick={() => setShowForgotPassword(false)}>×</button>
             <h2 className="modal-title">Reset Password</h2>
             <p className="modal-text">Enter your email address and we'll send you a link to reset your password.</p>
             <form onSubmit={handleForgotPassword}>
@@ -421,9 +457,7 @@ const Auth = () => {
                 />
                 <label htmlFor="forgotEmail" className="floating">Email Address</label>
               </div>
-              <button type="submit" className="form-button">
-                Send Reset Link
-              </button>
+              <button type="submit" className="form-button">Send Reset Link</button>
             </form>
           </div>
         </div>

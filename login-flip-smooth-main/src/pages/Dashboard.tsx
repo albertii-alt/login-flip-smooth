@@ -1,8 +1,10 @@
 import { Building2, Bed, Bath, ChefHat, DoorOpen, Plus, Edit, Image, AlertCircle, TrendingUp } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import "../styles/dashboard.css";
+import { useIsMobile } from "../hooks/use-mobile";
 
 const Dashboard = () => {
+  const isMobile = useIsMobile();
 
   const summaryStats = [
     { icon: Building2, title: "Total Boardinghouses", value: 3, color: "#06b6d4" },
@@ -78,7 +80,13 @@ const Dashboard = () => {
   return (
     <div className="app-layout">
       <Sidebar />
-      <div className="main-content dashboard-content">
+      <div
+        className="main-content dashboard-content"
+        style={{
+          marginLeft: isMobile ? undefined : "260px", // keep content out from under fixed sidebar on desktop
+          minHeight: "100vh",
+        }}
+      >
       {/* Header */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">Dashboard</h1>

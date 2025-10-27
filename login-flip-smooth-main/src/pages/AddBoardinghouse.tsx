@@ -2,12 +2,21 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import "../styles/boardinghouse.css";
+import { useIsMobile } from "../hooks/use-mobile";
 
 export default function AddBoardinghouse() {
+  const isMobile = useIsMobile();
+
   return (
     <div className="app-layout">
       <Sidebar />
-      <div className="main-content">
+      <div
+        className="main-content"
+        style={{
+          marginLeft: isMobile ? undefined : "260px",
+          minHeight: "100vh",
+        }}
+      >
         <div className="page-header">
           <Link to="/my-boardinghouse" className="back-button">
             <ArrowLeft />
