@@ -123,9 +123,30 @@ export default function EditBoardinghouse() {
     // if structuredAddress exists, prefill selects and text fields
     const sa: any = (bh as any).structuredAddress ?? null;
     if (sa) {
-      if (sa.region_code) setSelectedRegion(String(sa.region_code));
-      if (sa.province_code) setSelectedProvince(String(sa.province_code));
-      if (sa.city_code) setSelectedCity(String(sa.city_code));
+      if (sa.region_code) {
+        setSelectedRegion(String(sa.region_code));
+        // populate provinces for this region so the previously saved province remains available
+        const provs = provincesAll.filter((p) => String(p.region_code) === String(sa.region_code));
+        setProvinces(provs);
+      }
+      if (sa.province_code) {
+        setSelectedProvince(String(sa.province_code));
+        // populate cities for this province so the previously saved city remains available
+        const cs = citiesAll.filter((c) => String(c.province_code) === String(sa.province_code));
+        setCities(cs);
+      }
+      if (sa.city_code) {
+        setSelectedCity(String(sa.city_code));
+        // populate barangays for this city so the previously saved barangay remains available
+        const brgs = barangaysAll.filter((b) => {
+          if ((b as any).city_code != null && String((b as any).city_code) === String(sa.city_code)) return true;
+          if ((b as any).mun_code != null && String((b as any).mun_code) === String(sa.city_code)) return true;
+          if ((b as any).citymunCode != null && String((b as any).citymunCode) === String(sa.city_code)) return true;
+          if ((b as any).citymun_code != null && String((b as any).citymun_code) === String(sa.city_code)) return true;
+          return Object.values(b).some((v) => typeof v !== "object" && String(v) === String(sa.city_code));
+        });
+        setBarangays(brgs);
+      }
       // barangay code may be stored under few possible keys
       const saBrgyCode = sa.barangay_code ?? sa.brgy_code ?? sa.brgyCode ?? sa.barangayCode;
       if (saBrgyCode) setSelectedBarangay(String(saBrgyCode));
@@ -135,7 +156,7 @@ export default function EditBoardinghouse() {
       // best-effort: parse legacy address string into street
       setStreet(bh.address ?? "");
     }
-  }, [bh]);
+  }, [bh, provincesAll, citiesAll, barangaysAll]);
 
   // cascading effects: region -> provinces
   React.useEffect(() => {
@@ -150,12 +171,20 @@ export default function EditBoardinghouse() {
     }
     const filtered = provincesAll.filter((p) => String(p.region_code) === String(selectedRegion));
     setProvinces(filtered);
-    setSelectedProvince("");
-    setCities([]);
-    setSelectedCity("");
-    setBarangays([]);
-    setSelectedBarangay("");
-  }, [selectedRegion, provincesAll]);
+
+    // only clear selectedProvince if it's no longer valid for this region
+    if (!filtered.some((p) => String(p.province_code) === String(selectedProvince))) {
+      setSelectedProvince("");
+      setCities([]);
+      setSelectedCity("");
+      setBarangays([]);
+      setSelectedBarangay("");
+    } else {
+      // if kept, ensure cities list is populated for the preserved province
+      const citiesForProv = citiesAll.filter((c) => String(c.province_code) === String(selectedProvince));
+      setCities(citiesForProv);
+    }
+  }, [selectedRegion, provincesAll, selectedProvince, citiesAll]);
 
   // province -> cities
   React.useEffect(() => {
@@ -168,10 +197,24 @@ export default function EditBoardinghouse() {
     }
     const filtered = citiesAll.filter((c) => String(c.province_code) === String(selectedProvince));
     setCities(filtered);
-    setSelectedCity("");
-    setBarangays([]);
-    setSelectedBarangay("");
-  }, [selectedProvince, citiesAll]);
+
+    // only clear selectedCity if it's no longer valid for this province
+    if (!filtered.some((c) => String(c.city_code) === String(selectedCity))) {
+      setSelectedCity("");
+      setBarangays([]);
+      setSelectedBarangay("");
+    } else {
+      // if kept, ensure barangays list is populated for the preserved city
+      const brgs = barangaysAll.filter((b) => {
+        if ((b as any).city_code != null && String((b as any).city_code) === String(selectedCity)) return true;
+        if ((b as any).mun_code != null && String((b as any).mun_code) === String(selectedCity)) return true;
+        if ((b as any).citymunCode != null && String((b as any).citymunCode) === String(selectedCity)) return true;
+        if ((b as any).citymun_code != null && String((b as any).citymun_code) === String(selectedCity)) return true;
+        return Object.values(b).some((v) => typeof v !== "object" && String(v) === String(selectedCity));
+      });
+      setBarangays(brgs);
+    }
+  }, [selectedProvince, citiesAll, selectedCity, barangaysAll]);
 
   // city -> barangays (match barangay.city_code === selectedCity)
   React.useEffect(() => {
@@ -196,8 +239,12 @@ export default function EditBoardinghouse() {
     console.log(`EditBH: filtered barangays for city ${selectedCity} => ${filtered.length} items`);
 
     setBarangays(filtered);
-    setSelectedBarangay("");
-  }, [selectedCity, barangaysAll, barangayCodeKey, barangayNameKey]);
+
+    // only clear selectedBarangay if it's no longer valid for this city
+    if (!filtered.some((b) => String((b as any)[barangayCodeKey] ?? (b as any).brgy_code ?? (b as any).barangay_code ?? "") === String(selectedBarangay))) {
+      setSelectedBarangay("");
+    }
+  }, [selectedCity, barangaysAll, barangayCodeKey, barangayNameKey, selectedBarangay]);
 
   const validate = (): boolean => {
     if (!name.trim()) {

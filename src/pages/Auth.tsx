@@ -69,6 +69,36 @@ const Auth = () => {
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  // add helpers to read/write the "users" profile store
+  type ProfileUser = {
+    name?: string;
+    email: string;
+    role?: "owner" | "tenant";
+    avatar?: string;
+  };
+
+  function readUsersStore(): ProfileUser[] {
+    try {
+      const raw = localStorage.getItem("users");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+  function writeUsersStore(users: ProfileUser[]) {
+    try {
+      localStorage.setItem("users", JSON.stringify(users));
+    } catch {}
+  }
+  function upsertProfile(user: ProfileUser) {
+    if (!user?.email) return;
+    const list = readUsersStore();
+    const idx = list.findIndex((u) => u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx === -1) list.push(user);
+    else list[idx] = { ...list[idx], ...user };
+    writeUsersStore(list);
+  }
+
   const handleLoginSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (loginLoading) return;
@@ -117,14 +147,23 @@ const Auth = () => {
         localStorage.removeItem("rememberedEmail");
       }
 
-      // set current user session
+      // read profile from "users" store (if present)
+      const profileList = readUsersStore();
+      const profile = profileList.find((p) => p.email.toLowerCase() === matched.email.toLowerCase());
+
       const currentUser = {
-        name: matched.fullName || matched.email,
+        name: profile?.name ?? matched.fullName ?? matched.email,
         email: matched.email,
         role: matched.role,
+        avatar: profile?.avatar ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile?.name ?? matched.fullName ?? matched.email)}`,
         loggedIn: true,
       };
+
+      // persist currentUser session
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      // ensure profile store has the up-to-date entry (so AccountSettings can update it later)
+      upsertProfile({ name: currentUser.name, email: currentUser.email, role: matched.role, avatar: currentUser.avatar });
 
       setLoginLoading(false);
       toast({
@@ -132,7 +171,7 @@ const Auth = () => {
         description: `You are logged in as ${currentUser.role}.`,
       });
 
-      // redirect to interface (role-specific rendering is handled in Interface.tsx)
+      // redirect to interface
       setTimeout(() => navigate("/interface"), 600);
     }, 700);
   };
@@ -181,6 +220,9 @@ const Auth = () => {
 
       users.push(newUser);
       localStorage.setItem("registeredUsers", JSON.stringify(users));
+
+      // create profile entry in "users" store so AccountSettings can persist changes later
+      upsertProfile({ name: newUser.fullName, email: newUser.email, role: newUser.role, avatar: undefined });
 
       setRegisterLoading(false);
       toast({ title: "Registration successful", description: "You can now log in with your credentials." });

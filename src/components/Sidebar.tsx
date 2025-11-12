@@ -1,6 +1,7 @@
 import { Home, Building2, Plus, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import LogoutModal from "@/components/LogoutModal"; // added import
 
 type CurrentUser = {
   name?: string;
@@ -59,6 +60,7 @@ export const Sidebar = () => {
   };
 
   const [user, setUser] = useState<CurrentUser>(() => readUser());
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const onStorage = () => setUser(readUser());
@@ -66,11 +68,12 @@ export const Sidebar = () => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const handleLogout = () => {
+  const performLogout = () => {
     localStorage.removeItem("currentUser");
     setUser(readUser());
     navigate("/auth");
   };
+  const handleLogoutClick = () => setShowLogoutModal(true);
 
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
@@ -162,9 +165,9 @@ export const Sidebar = () => {
       <nav
         className={`sidebar-nav ${myBHOpen ? "submenu-open" : ""}`}
         style={{
-          overflowY: "auto",            // only nav can scroll
+          overflowY: myBHOpen ? "auto" : "hidden", // prevent scrollbars when submenu closed
           WebkitOverflowScrolling: "touch",
-          flex: 1,                       // take remaining vertical space
+          flex: 1,
           padding: "12px 0",
         }}
       >
@@ -179,21 +182,38 @@ export const Sidebar = () => {
                 <button
                   type="button"
                   aria-expanded={myBHOpen}
+                  aria-controls="sidebar-my-bh-submenu"
                   onClick={() => setMyBHOpen((s) => !s)}
                   className={`sidebar-nav-item ${isActive ? "active" : ""}`}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 180ms ease" }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <item.icon className="sidebar-nav-icon" />
                     <span>{item.label}</span>
                   </span>
+
+                  {/* Chevron with rotate animation */}
+                  <ChevronDown
+                    size={18}
+                    aria-hidden
+                    style={{
+                      transform: myBHOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 240ms cubic-bezier(0.2, 0, 0, 1)",
+                      color: isActive ? "#0369a1" : "#6b7280",
+                      marginLeft: 8,
+                    }}
+                  />
                 </button>
 
-                {/* Submenu - Add Room, Edit Boardinghouse, Edit Room */}
+                {/* Submenu - animated collapse using max-height + opacity for smooth drop */}
                 <div
+                  id="sidebar-my-bh-submenu"
                   className="sidebar-submenu"
                   style={{
-                    display: myBHOpen ? "block" : "none",
+                    maxHeight: myBHOpen ? 420 : 0,
+                    overflow: "hidden",
+                    transition: "max-height 320ms cubic-bezier(0.2,0,0,1), opacity 220ms ease",
+                    opacity: myBHOpen ? 1 : 0,
                     paddingLeft: 20,
                     marginTop: 6,
                   }}
@@ -231,7 +251,7 @@ export const Sidebar = () => {
             return (
               <button
                 key={item.label}
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="sidebar-nav-item logout-button"
                 type="button"
                 style={{ width: "100%", textAlign: "left" }}
@@ -254,6 +274,16 @@ export const Sidebar = () => {
           );
         })}
       </nav>
+
+      {/* logout confirm modal */}
+      <LogoutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          performLogout();
+          setShowLogoutModal(false);
+        }}
+      />
     </div>
   );
 };

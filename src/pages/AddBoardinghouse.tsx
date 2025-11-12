@@ -155,13 +155,19 @@ export default function AddBoardinghouse() {
     if (!validate()) return;
     setSaving(true);
     try {
+      // resolve display names from selected codes (always attempt to derive the full names)
       const regionName = regions.find((r) => String(r.region_code) === String(selectedRegion))?.region_name ?? "";
       const provinceName = provinces.find((p) => String(p.province_code) === String(selectedProvince))?.province_name ?? "";
       const cityName = cities.find((c) => String(c.city_code) === String(selectedCity))?.city_name ?? "";
-      const barangayName = barangays.find((b) => String((b as any)[barangayCodeKey] ?? (b as any).brgy_code ?? (b as any).barangay_code ?? "") === String(selectedBarangay))
-        ? String((barangays.find((b) => String((b as any)[barangayCodeKey] ?? (b as any).brgy_code ?? (b as any).barangay_code ?? "") === String(selectedBarangay)) as any)[barangayNameKey])
+      const barangayObj = barangays.find((b) => {
+        const code = String((b as any)[barangayCodeKey] ?? (b as any).brgy_code ?? (b as any).barangay_code ?? "");
+        return code && String(code) === String(selectedBarangay);
+      });
+      const barangayName = barangayObj
+        ? String((barangayObj as any)[barangayNameKey] ?? (barangayObj as any).brgy_name ?? (barangayObj as any).barangay_name ?? "")
         : "";
 
+      // ensure structuredAddress always contains the chosen values (names + codes + street/zip)
       const structuredAddress = {
         region: regionName,
         region_code: selectedRegion,
@@ -171,11 +177,19 @@ export default function AddBoardinghouse() {
         city_code: selectedCity,
         barangay: barangayName,
         barangay_code: selectedBarangay,
-        street,
-        zip: zipCode,
+        street: street?.trim() ?? "",
+        zip: zipCode?.trim() ?? "",
       };
 
-      const fullAddressString = [street, barangayName, cityName, provinceName, regionName].filter(Boolean).join(", ");
+      // compose full address string from all available parts (falls back to whatever the user entered)
+      const fullAddressParts = [
+        street?.trim(),
+        barangayName || undefined,
+        cityName || undefined,
+        provinceName || undefined,
+        regionName || undefined,
+      ].filter(Boolean);
+      const fullAddressString = fullAddressParts.join(", ");
 
       // local extended type to allow structuredAddress field without modifying shared type
       type StructuredAddress = {
@@ -216,14 +230,17 @@ export default function AddBoardinghouse() {
         ownerName: ownerName.trim(),
         name: name.trim(),
         contact: contact.trim(),
-        address: fullAddressString, // legacy string field kept
-        structuredAddress, // NEW structured address object
+        address: fullAddressString, // legacy string field kept (now always filled when possible)
+        structuredAddress, // NEW structured address object (always included)
         description: description.trim(),
         facebook: facebook.trim(),
         photos: photos,
         rooms: [],
       };
-      addBoardinghouse(newBH);
+
+      // cast to Boardinghouse to satisfy addBoardinghouse signature without changing shared types
+      addBoardinghouse(newBH as unknown as Boardinghouse);
+
       toast({ title: "Saved", description: "Boardinghouse added successfully." });
       navigate("/my-boardinghouse");
     } catch (err) {

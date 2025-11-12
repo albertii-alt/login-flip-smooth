@@ -1,4 +1,4 @@
-import { Building2, Bed, Bath, ChefHat, DoorOpen, Plus, Edit, Image, AlertCircle, TrendingUp } from "lucide-react";
+import { Building2, Bed, Bath, ChefHat, DoorOpen, Plus, Edit, Image, AlertCircle, TrendingUp, RefreshCw } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import "../styles/dashboard.css";
 import { useIsMobile } from "../hooks/use-mobile";
@@ -192,8 +192,13 @@ const Dashboard = () => {
         <div className="dashboard-header">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <h1 className="dashboard-title">Dashboard</h1>
-            <button className="btn-refresh" onClick={handleRefresh} style={{ marginLeft: 8 }}>
-              Refresh Data
+            <button
+              className="btn-refresh"
+              onClick={handleRefresh}
+              style={{ marginLeft: 8 }}
+              aria-label="Refresh dashboard"
+            >
+              <RefreshCw size={18} />
             </button>
           </div>
           <p className="dashboard-subtitle">Welcome back</p>

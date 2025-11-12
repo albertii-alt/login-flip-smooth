@@ -15,6 +15,7 @@ import {
 import '../styles/interface.css';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import LogoutModal from "@/components/LogoutModal"; // new import
 
 interface CurrentUser {
   name?: string;
@@ -70,6 +71,8 @@ const Interface = () => {
     navigate("/auth");
   };
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const menuItems = [
     { icon: Home, label: "Home", onClick: () => navigate("/interface") },
     { icon: Info, label: "About", onClick: () => navigate("/about") },
@@ -78,7 +81,7 @@ const Interface = () => {
     { icon: HelpCircle, label: "Help", onClick: () => {} },
     { icon: Shield, label: "Privacy & Policy", onClick: () => {} },
     { icon: Settings, label: "Settings", onClick: () => {} },
-    { icon: LogOut, label: "Logout", onClick: handleLogout },
+    { icon: LogOut, label: "Logout", onClick: () => setShowLogoutModal(true) },
   ];
 
   // local state for boardinghouses loaded from localStorage
@@ -272,6 +275,16 @@ const Interface = () => {
                 </div>
               </SheetContent>
             </Sheet>
+
+            {/* Logout modal used by top menu */}
+            <LogoutModal
+              open={showLogoutModal}
+              onClose={() => setShowLogoutModal(false)}
+              onConfirm={() => {
+                handleLogout();
+                setShowLogoutModal(false);
+              }}
+            />
           </div>
         </div>
       </header>

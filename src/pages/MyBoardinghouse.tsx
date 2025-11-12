@@ -152,18 +152,7 @@ export default function MyBoardinghouse() {
                   <p>{bh.address}</p>
                   <p>Contact: {bh.contact}</p>
                   <p>Rooms: {bh.rooms?.length ?? 0}</p>
-                  {bh.rooms && bh.rooms.length > 0 && (
-                    <div className="bh-rooms">
-                      <strong>Room list:</strong>
-                      <ul>
-                        {bh.rooms.map((r) => (
-                          <li key={r.id}>
-                            {r.roomName} — Beds: {r.availableBeds}/{r.totalBeds} — ₱{r.rentPrice}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Room list intentionally hidden in overview */}
                 </div>
                 <div className="bh-actions">
                   <button className="btn-edit" onClick={() => handleEdit(bh.id)}>
